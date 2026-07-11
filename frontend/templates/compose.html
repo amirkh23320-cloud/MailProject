@@ -1,0 +1,101 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Compose Mail
+{% endblock %}
+
+{% block content %}
+
+<div class="card">
+
+    <div class="card-header bg-success text-white">
+        <h4>Compose New Mail</h4>
+    </div>
+
+    <div class="card-body">
+
+        <form method="POST" enctype="multipart/form-data">
+
+            <div class="mb-3">
+
+                <label class="form-label">
+                    Receiver
+                </label>
+
+                <select
+                    class="form-select"
+                    name="receiver"
+                    required>
+
+                    <option value="" selected disabled>
+                        Select Receiver
+                    </option>
+
+                    {% for user in users %}
+
+                    <option value="{{ user.id }}">
+                        {{ user.username }}
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+            <div class="mb-3">
+
+                <label class="form-label">
+                    Subject
+                </label>
+
+                <input
+                    type="text"
+                    class="form-control"
+                    name="subject"
+                    required>
+
+            </div>
+
+            <div class="mb-3">
+
+                <label class="form-label">
+                    Message
+                </label>
+
+                <textarea
+                    class="form-control"
+                    rows="7"
+                    name="content"
+                    required></textarea>
+
+            </div>
+
+            <div class="mb-3">
+
+                <label class="form-label">
+                    Attachment
+                </label>
+
+                <input
+                    type="file"
+                    class="form-control"
+                    name="attachment">
+
+            </div>
+
+            <button
+                type="submit"
+                class="btn btn-success">
+
+                Send Mail
+
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}
