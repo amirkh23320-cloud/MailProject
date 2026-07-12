@@ -1,3 +1,6 @@
+import os
+import uuid
+
 from flask import (
     Blueprint,
     render_template,
@@ -5,10 +8,13 @@ from flask import (
     session,
     redirect,
     url_for,
-    flash
+    flash,
+    current_app,
+    send_from_directory
 )
 
 from werkzeug.security import check_password_hash
+from werkzeug.utils import secure_filename
 
 from backend.database import db
 from backend.models import User, Letter
@@ -80,6 +86,26 @@ def compose():
         subject = request.form.get("subject")
         body = request.form.get("content")
 
+        # دریافت فایل
+        attachment = request.files.get("attachment")
+
+        filename = None
+
+        if attachment and attachment.filename != "":
+
+            original_filename = secure_filename(attachment.filename)
+
+            extension = os.path.splitext(original_filename)[1]
+
+            filename = f"{uuid.uuid4()}{extension}"
+
+            attachment.save(
+                os.path.join(
+                    current_app.config["UPLOAD_FOLDER"],
+                    filename
+                )
+            )
+
         sender = User.query.filter_by(
             username=session["username"]
         ).first()
@@ -88,7 +114,8 @@ def compose():
             sender_id=sender.id,
             receiver_id=int(receiver_id),
             subject=subject,
-            body=body
+            body=body,
+            attachment=filename
         )
 
         db.session.add(new_letter)
@@ -126,6 +153,19 @@ def view_letter(letter_id):
     return render_template(
         "view_letter.html",
         letter=letter
+    )
+
+
+@main.route("/download/<filename>")
+def download_file(filename):
+
+    if "username" not in session:
+        return redirect(url_for("main.login"))
+
+    return send_from_directory(
+        current_app.config["UPLOAD_FOLDER"],
+        filename,
+        as_attachment=True
     )
 
 

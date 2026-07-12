@@ -1,0 +1,61 @@
+
+services:
+
+  database:
+    image: postgres:16
+    container_name: mail_database
+    restart: always
+
+    environment:
+      POSTGRES_USER: mailuser
+      POSTGRES_PASSWORD: mailpass
+      POSTGRES_DB: maildb
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: mail_backend
+
+    restart: always
+
+    depends_on:
+      - database
+
+    ports:
+      - "5000:5000"
+
+    environment:
+      SQLALCHEMY_DATABASE_URI: postgresql+psycopg2://mailuser:mailpass@database:5432/maildb
+
+    volumes:
+      - .:/app
+
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend_docker/Dockerfile
+
+    container_name: mail_frontend
+
+    restart: always
+
+    depends_on:
+      - backend
+
+    ports:
+      - "8080:80"
+
+
+volumes:
+
+  postgres_data:
